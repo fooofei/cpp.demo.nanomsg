@@ -4,8 +4,7 @@ set(NN_STATIC_LIB ON CACHE "" BOOL FORCE)
 set(NN_TESTS OFF CACHE "" BOOL FORCE)
 set(NN_ENABLE_DOC OFF CACHE "" BOOL FORCE)
 
-
-set(nanomsg_home ${CMAKE_CURRENT_SOURCE_DIR}/nanomsg)
+set(nanomsg_home ${CMAKE_CURRENT_LIST_DIR}/nanomsg)
 set(nanomsg_src ${nanomsg_home}/src)
 
 if (NOT TARGET nanomsg)
