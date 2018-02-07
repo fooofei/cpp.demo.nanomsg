@@ -14,6 +14,7 @@
 
 // https://github.com/nanomsg/nanomsg/issues/283 作者说了 pub/sub 模式就是不可靠 类似 UDP，或者广播
 // 要想可靠 就需要使用 REQ/REP
+//  https://github.com/nanomsg/nanomsg/issues/283
 
 void 
 send(int sock)
