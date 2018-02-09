@@ -36,16 +36,19 @@ void nrecv(int sock)
     for (;;)
     {
         msg = 0;
-        ret = nn_recv(sock, &msg, NN_MSG, 0);
+        ret = nn_recv(sock, &msg, NN_MSG, NN_DONTWAIT);
 
-        printf("[+] check %d reper recv bytes %d:%.*s\n", count, ret, ret, (msg ? msg : ""));
+        //printf("[+] check %d reper recv bytes %d:%.*s\n", count, ret, ret, (msg ? msg : ""));
 
         if (msg) {
-            nn_freemsg(msg);
-
-            ret = snprintf(sendbuf, _send_size, "ack by %llu", (unsigned long long)get_current_proc_id());
+            
+            ret = snprintf(sendbuf, _send_size, "ack by %llu recv (%d)%.*s"
+                , (unsigned long long)get_current_proc_id()
+            , ret ,ret ,msg );
             ret = nn_send(sock, sendbuf, ret, NN_DONTWAIT);
             printf("[+] send ack %s ret=%d\n", sendbuf, ret);
+
+            nn_freemsg(msg);
         }
 
 

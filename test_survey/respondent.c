@@ -38,24 +38,27 @@ void nrecv(int sock)
         msg = 0;
         ret = nn_recv(sock, &msg, NN_MSG, NN_DONTWAIT);
 
-        printf("[+] check %d suber recv bytes %d:%.*s\n", count, ret, ret, (msg ? msg : ""));
+        
 
         if (msg) {
-            nn_freemsg(msg);
-
-            ret = snprintf(sendbuf, _send_size, "ack by %llu", (unsigned long long)get_current_proc_id());
+            ret = snprintf(sendbuf, _send_size, "ack by %llu, recv (%d)%.*s", (unsigned long long)get_current_proc_id(), ret,ret, msg);
             ret = nn_send(sock, sendbuf, ret, NN_DONTWAIT);
-            printf("[+] send ack %s ret=%d\n", sendbuf, ret);
+            printf("[+] send(%d) ack [%s]\n", ret, sendbuf);
+            nn_freemsg(msg);
+        }
+        else {
+            //printf("[+] check %d respondent recv bytes %d:%.*s\n", count, ret, ret, (msg ? msg : ""));
         }
 
-
         count += 1;
+        nn_sleep(10);//milli
 
-        nn_sleep(1000);//milli
+        if(count>600*100) 
+            break;
     }
 }
 
-int main()
+void test_respondent()
 {
     int sock = 0;
     int ret;
@@ -66,10 +69,11 @@ int main()
     {
         sock = nn_socket(AF_SP, NN_RESPONDENT);
         if (sock < 0) break;
-       
 
-        //ret = nn_bind(sock, addr);
-        ret = nn_connect(sock, addr);
+        ret = nn_bind(sock, addr);
+        if (ret < 0) {
+            ret = nn_connect(sock, addr);
+        }
         if (ret < 0) {
             fprintf(stderr, "[!] nn_connect ret=%d\n", ret);
             break;
@@ -88,6 +92,15 @@ int main()
     {
         nn_close(sock);
     }
+}
+
+int main()
+{
+   for (;;)
+   {
+       test_respondent();
+       printf("[!] rebuild\n");
+   }
 
     return 0;
 }

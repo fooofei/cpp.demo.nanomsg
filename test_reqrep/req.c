@@ -27,7 +27,11 @@ void n_send(int sock)
     char * msg;
     int flags;
     uint64_t connections;
+    uint64_t i;
     
+    (void)flags;
+    (void)i;
+
     nrandom = 0;
     nn_random_generate(&nrandom, sizeof(nrandom));
     count = 0;
@@ -37,42 +41,32 @@ void n_send(int sock)
         // wait for add 
         // D:\source\GitHub\c_nanomsg_demo\nanomsg\src\protocols\utils\lb.c 
         // int nn_lb_send (struct nn_lb *self, struct nn_msg *msg, struct nn_pipe **to)
-        connections = 0;
-        for (;;)
-        {
-            connections = nn_get_statistic(sock, NN_STAT_CURRENT_CONNECTIONS);
-            if (connections > 0) {
-                break;
-            }
-            break;
-            nn_sleep(1000);
-        }
+        connections = nn_get_statistic(sock, NN_STAT_CURRENT_CONNECTIONS);
+        rc = -1;
         
+        printf("[+] got connections (%lld)\n", (long long)connections);
 
-        rc = snprintf(sendbuf, _send_size, "from req %d:%d", nrandom,count);
+        rc = snprintf(sendbuf, _send_size, "from req %d:%d", nrandom, count);
+
+           
+        // 在 call nn_send() 之后  nn_recv 之后 才有连接
         rc = nn_send(sock, sendbuf, rc, 0);
-        printf("[+] req send ret=%d, %s\n", rc, sendbuf);
-        
-        flags = 0; // we will wait
+
         for (;;)
         {
             msg = 0;
-            rc = nn_recv(sock, &msg, NN_MSG, flags);
+            rc = nn_recv(sock, &msg, NN_MSG, 0);
             if (rc > 0) {
                 printf("[+] req recv %.*s\n", rc, msg);
                 nn_freemsg(msg);
             }
-            if (rc < 0 && rc != -EAGAIN) {
+            if(rc<0)
                 break;
-            }
-            flags = NN_DONTWAIT;
-            
         }
-
         
 
+
         //break;
-        nn_sleep(2000);
         count += 1;
     }
 
